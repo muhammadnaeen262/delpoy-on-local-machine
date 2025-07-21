@@ -15,10 +15,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Dependencies & Run Tests
+      - name: Install & Test
         run: |
           npm ci
           npm test
+
 
   deploy:
     runs-on: ubuntu-latest
@@ -41,7 +42,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ${{ env.DEPLOY_PATH }}
+            cd ${{ env.DEPLOY_PATH }}/app
             npm install --omit=dev
             if ! pm2 list | grep -q ${{ env.APP_NAME }}; then
               pm2 start index.js --name ${{ env.APP_NAME }}
