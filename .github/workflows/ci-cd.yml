@@ -1,0 +1,51 @@
+name: Build and Deploy to Local Machine
+
+on:
+  push:
+    branches: [main]
+
+env:
+  APP_NAME: nodejs-app
+  DEPLOY_PATH: ~/apps/nodejs-app
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies & Run Tests
+        run: |
+          npm ci
+          npm test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Copy code to local machine via SSH
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: ${{ env.DEPLOY_PATH }}
+
+      - name: SSH and deploy via PM2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+            npm install --omit=dev
+            if ! pm2 list | grep -q ${{ env.APP_NAME }}; then
+              pm2 start index.js --name ${{ env.APP_NAME }}
+            else
+              pm2 restart ${{ env.APP_NAME }}
+            fi
+            pm2 save
