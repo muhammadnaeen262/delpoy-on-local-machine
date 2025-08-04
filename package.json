@@ -1,14 +1,20 @@
 {
   "name": "my-node-app",
   "version": "1.0.0",
-  "description": "A simple Node.js app for Jenkins CI/CD",
+  "description": "A simple Node.js app for CI/CD pipelines",
   "main": "app/index.js",
   "scripts": {
     "start": "node app/index.js",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "build": "echo 'No build step needed for this Node.js app'"
   },
   "author": "DevOps GPT",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "express": "^4.18.2"
   },
